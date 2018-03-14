@@ -130,8 +130,8 @@ public class Lab6{
                System.out.println("3...");
             }
             else if(tokens[0].equals("4")){
-               //revenueCommand();
-               System.out.println("4...");
+               revenueCommand();
+               //System.out.println("4...");
             }
             else if(tokens[0].equals("M")){
                printOptions();
@@ -288,6 +288,99 @@ public class Lab6{
 
    }
 
+
+   private static void revenueCommand(){
+      String title = "Room\t|Jan\t|Feb\t|Mar\t|Apr\t|May\t|June\t|July\t|Aug\t|Sep\t|Oct\t|Nov\t|Dec";
+      int count = 1;
+      int i = 0;
+      int j = 0;
+      String[][] revenue = new String[11][14];
+      revenue = setTable(revenue); 
+      
+      try{
+         PreparedStatement pStatement = null;
+         ResultSet rs = null;
+         String sql = "SELECT Room, ROUND(SUM(Rate),0) AS Month " +
+            "FROM lab6_rooms INNER JOIN lab6_reservations on RoomCode = Room " +
+            "WHERE Checkout >= ? AND Checkout <= ? " + 
+            "GROUP BY Room " +
+            "ORDER BY Room;";
+         pStatement = conn.prepareStatement(sql);
+         while(count < 10 ){
+            rs = getMonth(pStatement, rs, "2018-0"+ count + "-01", "2018-0" + count + "-31");
+            i = 1;
+            while(rs.next()){
+               revenue[i][count] = Integer.toString(rs.getInt("Month"))+ "\t|";
+               i++;
+            }
+            count++;
+         }
+         while(count < 13 ){
+            rs = getMonth(pStatement, rs, "2018-"+ count + "-01", "2018-" + count + "-31");
+            i = 1;
+            while(rs.next()){
+               revenue[i][count] = Integer.toString(rs.getInt("Month"))+ "\t|";
+               i++;
+            }
+            count++;
+         }
+         rs = getMonth(pStatement, rs, "2018-01-01", "2018-12-31");
+         i = 1;
+         while(rs.next()){
+            revenue[i][count] = Integer.toString(rs.getInt("Month"))+ "\t|";
+            i++;
+         }
+      }
+      catch(SQLException e){
+         System.out.println(e);
+      }
+
+      for (i = 0; i < 11; i++){
+         for(j = 0; j < 14; j++){
+            System.out.print(revenue[i][j]);
+         }
+         System.out.print("\n");
+      }  
+   }
+   private static String[][] setTable(String[][] revenue){
+      revenue[0][0] = "|Room\t|";
+      revenue[0][1] = "Jan\t|";
+      revenue[0][2] = "Feb\t|";
+      revenue[0][3] = "Mar\t|";
+      revenue[0][4] = "Apr\t|";
+      revenue[0][5] = "May\t|";
+      revenue[0][6] = "June\t|";
+      revenue[0][7] = "July\t|";
+      revenue[0][8] = "Aug\t|";
+      revenue[0][9] = "Sep\t|";
+      revenue[0][10] = "Oct\t|";
+      revenue[0][11] = "Nov\t|";
+      revenue[0][12] = "Dec\t|";
+      revenue[0][13] = "Total\t|";
+      revenue[1][0] = "|AOB\t|";
+      revenue[2][0] = "|CAS\t|";
+      revenue[3][0] = "|FNA\t|";
+      revenue[4][0] = "|HBB\t|";
+      revenue[5][0] = "|IBD\t|";
+      revenue[6][0] = "|IBS\t|";
+      revenue[7][0] = "|MWC\t|";
+      revenue[8][0] = "|RND\t|";
+      revenue[9][0] = "|RTE\t|";
+      revenue[10][0] = "|TAA\t|";
+      return revenue;
+   }
+
+   private static ResultSet getMonth(PreparedStatement pStatement, ResultSet rs, String startDate, String endDate){
+      try{
+         pStatement.setString(1, startDate);
+         pStatement.setString(2, endDate);
+         rs = pStatement.executeQuery();
+      }
+      catch(SQLException e){
+         System.out.println(e);
+      }
+      return rs;
+   }
 
    private static void login(){
       String jdbc_url="jdbc:mysql://csc365winter2018.webredirect.org/pmalapir?";
