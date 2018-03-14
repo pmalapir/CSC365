@@ -73,4 +73,21 @@ WHERE Bed_Type = desiredBedType;
 /* query one at a tine following this order. date->room->bedtype.
    Each time, pulling "FROM" the previous query's result. At the
    same time, add the results to an ArrayList. At the end, output
-   ArrayList values accordingly.*/
+   ArrayList value accordingly.*/
+
+--detailed reservation information
+--First Name
+--Last Name
+--A range of datas
+--Room code
+--Reservation code
+
+SELECT *
+FROM lab6_reservations
+WHERE 
+CODE LIKE searchCode
+AND Room LIKE searchRoom
+AND LastName LIKE searchLastName
+AND FirstName LIKE searchFirstName
+AND CheckIn BETWEEN searchDateStart AND searchDateEnd
+AND Checkout BETWEEN searchDateStart AND searchDateEnd;

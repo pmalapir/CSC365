@@ -254,13 +254,18 @@ public class Lab6{
    }
 
    private static void searchCommand(){
+      // ArrayList<String> whereStatements = new ArrayList<String>();
+
       String firstName="";
       String lastName="";
       String startDate="";
       String endDate ="";
       String roomCode = "";
-      int reservationCode = -1;
-
+      String reservationCode = "";
+      String str1;
+      String query = "SELECT * " + 
+                     "FROM lab6_reservations " +
+                     "WHERE ";
 
       System.out.println("\nSpecify search criteria...");
       try{
@@ -269,16 +274,76 @@ public class Lab6{
          System.out.print("Last Name: ");
          lastName = br.readLine();
          System.out.println("Reservations between");
-         System.out.print("Start Day: ");
+         System.out.print("Start Date: ");
          startDate = br.readLine();
-         System.out.print("End Day: ");
+         System.out.print("End Date: ");
          endDate = br.readLine();
          System.out.print("Room Code: ");
          roomCode = br.readLine();
          System.out.print("Reservation Code: ");
-         reservationCode = Integer.parseInt(br.readLine());
-         
+         // reservationCode = Integer.parseInt(br.readLine());
+         reservationCode = br.readLine(); // since it will be put back into a string anyways
 
+         if (firstName.equals("Any") == false) {
+            str1 = "FirstName LIKE \"";
+            str1.concat(firstName);
+            str1.concate("\" ");
+            whereStatements.add(str1);
+         }
+
+         if (lastName.equals("Any") == false) {
+            str1 = "LastName LIKE \"";
+            str1.concat(lastName);
+            str1.concate("\" ");
+            whereStatements.add(str1);
+         }
+
+         if ((startDate.equals("Any") == false) && (endDate.equals("Any") == false)) {
+            str1 = "CheckIn BETWEEN \"";
+            str1.concat(startDate);
+            str1.concate("\" AND \"");
+            str1.concate(endDate);
+            str1.concate("\" ");
+            whereStatements.add(str1);
+
+            str1 = "Checkout BETWEEN \"";
+            str1.concat(startDate);
+            str1.concate("\" AND \"");
+            str1.concate(endDate);
+            str1.concate("\" ");
+            whereStatements.add(str1);
+         }
+
+         if (roomCode.equals("Any") == false) {
+            str1 = "Room LIKE \"";
+            str1.concat(roomCode);
+            str1.concate("\" ");
+            whereStatements.add(str1);
+         }
+
+         if (reservationCode.equals("Any") == false) {
+            str1 = "CODE LIKE \"";
+            str1.concat(reservationCode);
+            str1.concate("\" ");
+            whereStatements.add(str1);
+         }
+
+         if (whereStatements.size() == 0) {
+            query = "SELECT * " + 
+                     "FROM lab6_reservations;";
+         }
+         else {
+            for (int i=0; i<whereStatements.size(); i++) {
+               if (i != 0) {
+                  query.concate("AND ");
+               }
+               query.concate(whereCommand.get(i))
+            }
+
+            query.concate(';');
+         }
+
+         // TODO have the string now just need to execute it, pls follow up
       }
       catch(Exception e){
          System.out.println(e);
