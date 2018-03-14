@@ -254,7 +254,7 @@ public class Lab6{
    }
 
    private static void searchCommand(){
-      // ArrayList<String> whereStatements = new ArrayList<String>();
+      ArrayList<String> whereStatements = new ArrayList<String>();
 
       String firstName="";
       String lastName="";
