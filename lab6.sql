@@ -23,6 +23,7 @@ WHERE (Room, Checkout) IN
    GROUP BY Room)
 ORDER BY Room;
 
+--rooms and reservations
 SELECT Popularity.Room, popularity, days_until_next_checkin, stay_duration
 FROM
    (SELECT Room, ROUND(SUM(DATEDIFF(Checkout, CheckIn))/180, 2) AS popularity
@@ -47,3 +48,29 @@ INNER JOIN
       GROUP BY Room)
    ORDER BY Room) AS StayDuration ON Popularity.Room = StayDuration.Room
 ORDER BY popularity DESC, days_until_next_checkin ASC, stay_duration DESC;
+
+--reservations
+
+--date
+SELECT *
+FROM lab6_reservations
+INNER JOIN Rooms on Room = Room_Id
+WHERE Checkout < desiredCheckIn
+ORDER BY DATEDIFF(Checkout, desiredCheckIn)  
+
+--room
+SELECT *
+FROM lab6_reservations
+INNER JOIN Rooms on Room = Room_Id
+WHERE Room = desiredRoom;
+
+--bedtype
+SELECT *
+FROM lab6_reservations
+INNER JOIN Rooms on Room = Room_Id
+WHERE Bed_Type = desiredBedType;
+
+/* query one at a tine following this order. date->room->bedtype.
+   Each time, pulling "FROM" the previous query's result. At the
+   same time, add the results to an ArrayList. At the end, output
+   ArrayList values accordingly.*/
