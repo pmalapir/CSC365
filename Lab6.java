@@ -459,52 +459,54 @@ public class Lab6{
          reservationCode = br.readLine(); 
 
          if (firstName.toLowerCase().equals("any") == false) {
-            str1 = "FirstName LIKE \"";
-            str1 = str1.concat(firstName);
-            str1 = str1.concat("%\" ");
+            str1 = "FirstName LIKE \"" + firstName + "%\" ";
+            // str1 = str1.concat(firstName);
+            // str1 = str1.concat("%\" ");
             //System.out.println(str1);
             whereStatements.add(str1);
          }
 
          if (lastName.toLowerCase().equals("any") == false) {
-            str1 = "LastName LIKE \"";
-            str1 = str1.concat(lastName);
-            str1 = str1.concat("%\" ");
+            str1 = "LastName LIKE \"" + lastName + "%\" ";
+            // str1 = str1.concat(lastName);
+            // str1 = str1.concat("%\" ");
             whereStatements.add(str1);
          }
 
          if (startDate.toLowerCase().equals("any") == false){
-            str1 = "CheckIn >= \"";
-            str1 = str1.concat(startDate);
-            str1 = str1.concat("\" ");
+            str1 = "CheckIn >= \"" + startDate + "\" ";
+            // str1 = str1.concat(startDate);
+            // str1 = str1.concat("\" ");
             whereStatements.add(str1);
          }
 
          if(endDate.toLowerCase().equals("any") == false){
-            str1 = "Checkout <= \"";
-            str1 = str1.concat(endDate);
-            str1 = str1.concat("\" ");
+            str1 = "Checkout <= \"" + endDate + "\" ";
+            // str1 = str1.concat(endDate);
+            // str1 = str1.concat("\" ");
             whereStatements.add(str1);
          }
 
          if (roomCode.toLowerCase().equals("any") == false) {
-            str1 = "Room LIKE \"";
-            str1 = str1.concat(roomCode);
-            str1 = str1.concat("%\" ");
+            str1 = "Room LIKE \"" + roomCode + "%\" ";
+            // str1 = str1.concat(roomCode);
+            // str1 = str1.concat("%\" ");
             whereStatements.add(str1);
          }
 
          if (reservationCode.toLowerCase().equals("any") == false) {
-            str1 = "CODE LIKE \"";
-            str1 = str1.concat(reservationCode);
-            str1 = str1.concat("%\" ");
+            str1 = "CODE LIKE \"" + reservationCode + "%\" ";
+            // str1 = str1.concat(reservationCode);
+            // str1 = str1.concat("%\" ");
             whereStatements.add(str1);
          }
 
-         if (whereStatements.size() == 0) {
-            query = "SELECT * " + 
-                     "FROM lab6_reservations ;";
-         }
+         whereStatements.add(";");
+
+         // if (whereStatements.size() == 0) {
+         //    query = "SELECT * " + 
+         //             "FROM lab6_reservations ;";
+         // }
          else {
             for (int i=0; i<whereStatements.size(); i++) {
                if (i != 0) {
