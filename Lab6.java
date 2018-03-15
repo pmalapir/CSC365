@@ -383,17 +383,19 @@ public class Lab6{
             whereStatements.add(str1);
          }
 
-         if ((startDate.toLowerCase().equals("any") == false) && (endDate.toLowerCase().equals("any") == false)) {
-            str1 = "CheckIn BETWEEN \"";
+         if (startDate.toLowerCase().equals("any") == false){
+            str1 = "CheckIn >= \"";
             str1 = str1.concat(startDate);
-            str1 = str1.concat("\" AND \"");
-            str1 = str1.concat(endDate);
+            //str1 = str1.concat("\" AND \"");
+            //str1 = str1.concat(endDate);
             str1 = str1.concat("\" ");
             whereStatements.add(str1);
+         }
 
-            str1 = "Checkout BETWEEN \"";
-            str1 = str1.concat(startDate);
-            str1 = str1.concat("\" AND \"");
+         if(endDate.toLowerCase().equals("any") == false){
+            str1 = "Checkout <= \"";
+            //str1 = str1.concat(startDate);
+            //str1 = str1.concat("\" AND \"");
             str1 = str1.concat(endDate);
             str1 = str1.concat("\" ");
             whereStatements.add(str1);
@@ -428,7 +430,7 @@ public class Lab6{
             query = query.concat(";");
          }
          ResultSet rs = s.executeQuery(query);
-         
+
          System.out.println("|CODE" + "\t|" + "Room" + "\t|" + "CheckIn" + "\t|" + "Checkout" + "\t|" + 
             "Rate" + "\t|" + "LastName" + "\t|" + "FirstName" + "\t|" + "Adults" + "\t|" + "Kids");
          while(rs.next()){
