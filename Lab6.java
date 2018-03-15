@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 
+
 import java.util.*;
 import java.lang.*;
 import java.io.*;
@@ -118,16 +119,16 @@ public class Lab6{
          while ((command = br.readLine()) != null){
             String[] tokens = command.split(" ");
             if(tokens[0].equals("1")){
-               //roomCommand();
-               System.out.println("1...");
+               roomCommand();
+               //System.out.println("1...");
             }
             else if(tokens[0].equals("2")){
                bookCommand();
-               System.out.println("2...");
+               //System.out.println("2...");
             }
             else if(tokens[0].equals("3")){
                searchCommand();
-               System.out.println("3...");
+               //System.out.println("3...");
             }
             else if(tokens[0].equals("4")){
                revenueCommand();
@@ -176,6 +177,82 @@ public class Lab6{
       //Next available check-in date
       //Length of the most recent stay in the room
       //Most recent check out date
+      String roomCode = "";
+      String roomName = "";
+      int beds = 0;
+      String bedType = "";
+      int maxOcc = 0;
+      double basePrice = 0;
+      String decor = "";
+      double popularity = 0;
+      int nextCheckin = 0;
+      int stayDuration = 0;
+      String bufferOne = "\t|";
+      String bufferTwo = "\t|";
+      Statement s = null;
+      try{
+         s = conn.createStatement();
+         String sql = "SELECT lab6_rooms.*, popularity, days_until_next_checkin, stay_duration " +
+            "FROM lab6_rooms " +
+            "INNER JOIN " +
+               "(SELECT Room, ROUND(SUM(DATEDIFF(Checkout, CheckIn))/180, 2) AS popularity " +
+               "FROM lab6_reservations " +
+               "WHERE CheckIn < CURDATE() " +
+               "AND DATEDIFF(CheckIn, CURDATE()) < 181 " +
+               "AND Checkout < CURDATE() " +
+               "AND DATEDIFF(Checkout, CURDATE()) < 181 " +
+               "GROUP BY Room) AS Popularity ON Popularity.Room = RoomCode " +
+            "INNER JOIN " +
+               "(SELECT Room, MIN(DATEDIFF(CheckIn, CURDATE())) AS days_until_next_checkin " +
+               "FROM lab6_reservations " +
+               "WHERE CheckIn > (CURDATE() + 1) " +
+               "GROUP BY Room) AS nextCheckin ON Popularity.Room = nextCheckin.Room " +
+            "INNER JOIN " +
+               "(SELECT Room, DATEDIFF(Checkout, CheckIn) AS stay_duration " +
+               "FROM lab6_reservations " +
+               "WHERE (Room, Checkout) IN " +
+                  "(SELECT Room, MAX(Checkout) AS recent_checkout " +
+                  "FROM lab6_reservations " +
+                  "WHERE Checkout < CURDATE() " +
+                  "GROUP BY Room) " +
+               "ORDER BY Room) AS StayDuration ON Popularity.Room = StayDuration.Room " +
+            "ORDER BY popularity DESC, days_until_next_checkin ASC, stay_duration DESC;";
+         ResultSet rs = s.executeQuery(sql);
+         System.out.println("RoomCode \t|RoomName \t\t\t|Beds \t|bedType \t|maxOcc\t|basePrice" +
+            " \t|decor \t\t|popularity \t|next_checkin\t|last_stay_duration");
+         while(rs.next()){
+            roomCode = rs.getString("RoomCode");
+            roomName = rs.getString("RoomName");
+            beds = rs.getInt("Beds");
+            bedType = rs.getString("bedType");
+            maxOcc = rs.getInt("maxOcc");
+            basePrice = rs.getDouble("basePrice");
+            decor = rs.getString("decor");
+            popularity = rs.getDouble("popularity");
+            nextCheckin = rs.getInt("days_until_next_checkin");
+            stayDuration = rs.getInt("stay_duration");
+
+            if(roomName.equals("Immutable before decorum")){
+               bufferOne = "\t|";
+            }
+            else{
+               bufferOne = "\t\t|";
+            }
+
+            if(decor.equals("traditional")){
+               bufferTwo = "\t|";
+            }
+            else{
+               bufferTwo = "\t\t|";
+            }
+            System.out.println("|" + roomCode + "\t\t|" + roomName + bufferOne + beds + "\t|" + bedType + "\t\t|" + 
+               maxOcc + "\t|" + basePrice + "\t\t|" + decor + bufferTwo + popularity + "\t\t|" + nextCheckin + "\t\t|" + 
+               stayDuration);
+         }
+      }
+      catch(SQLException e){
+         System.out.println(e);
+      }
    }
 
    private static void bookCommand(){
@@ -253,7 +330,7 @@ public class Lab6{
       //add to reservation table
    }
 
-   private static void searchCommand(){
+ private static void searchCommand(){
       ArrayList<String> whereStatements = new ArrayList<String>();
 
       String firstName="";
@@ -262,13 +339,21 @@ public class Lab6{
       String endDate ="";
       String roomCode = "";
       String reservationCode = "";
+      int resCode = 0;
+      double rate = 0;
+      int adults = 0;
+      int kids = 0;
       String str1;
+      Statement s = null;
+
       String query = "SELECT * " + 
                      "FROM lab6_reservations " +
                      "WHERE ";
 
       System.out.println("\nSpecify search criteria...");
+
       try{
+         s = conn.createStatement();
          System.out.print("First Name: ");
          firstName = br.readLine();
          System.out.print("Last Name: ");
@@ -281,78 +366,95 @@ public class Lab6{
          System.out.print("Room Code: ");
          roomCode = br.readLine();
          System.out.print("Reservation Code: ");
-         // reservationCode = Integer.parseInt(br.readLine());
-         reservationCode = br.readLine(); // since it will be put back into a string anyways
+         reservationCode = br.readLine(); 
 
-         if (firstName.equals("Any") == false) {
+         if (firstName.toLowerCase().equals("any") == false) {
             str1 = "FirstName LIKE \"";
-            str1.concat(firstName);
-            str1.concate("\" ");
+            str1 = str1.concat(firstName);
+            str1 = str1.concat("%\" ");
+            //System.out.println(str1);
             whereStatements.add(str1);
          }
 
-         if (lastName.equals("Any") == false) {
+         if (lastName.toLowerCase().equals("any") == false) {
             str1 = "LastName LIKE \"";
-            str1.concat(lastName);
-            str1.concate("\" ");
+            str1 = str1.concat(lastName);
+            str1 = str1.concat("%\" ");
             whereStatements.add(str1);
          }
 
-         if ((startDate.equals("Any") == false) && (endDate.equals("Any") == false)) {
+         if ((startDate.toLowerCase().equals("any") == false) && (endDate.toLowerCase().equals("any") == false)) {
             str1 = "CheckIn BETWEEN \"";
-            str1.concat(startDate);
-            str1.concate("\" AND \"");
-            str1.concate(endDate);
-            str1.concate("\" ");
+            str1 = str1.concat(startDate);
+            str1 = str1.concat("\" AND \"");
+            str1 = str1.concat(endDate);
+            str1 = str1.concat("\" ");
             whereStatements.add(str1);
 
             str1 = "Checkout BETWEEN \"";
-            str1.concat(startDate);
-            str1.concate("\" AND \"");
-            str1.concate(endDate);
-            str1.concate("\" ");
+            str1 = str1.concat(startDate);
+            str1 = str1.concat("\" AND \"");
+            str1 = str1.concat(endDate);
+            str1 = str1.concat("\" ");
             whereStatements.add(str1);
          }
 
-         if (roomCode.equals("Any") == false) {
+         if (roomCode.toLowerCase().equals("any") == false) {
             str1 = "Room LIKE \"";
-            str1.concat(roomCode);
-            str1.concate("\" ");
+            str1 = str1.concat(roomCode);
+            str1 = str1.concat("%\" ");
             whereStatements.add(str1);
          }
 
-         if (reservationCode.equals("Any") == false) {
+         if (reservationCode.toLowerCase().equals("any") == false) {
             str1 = "CODE LIKE \"";
-            str1.concat(reservationCode);
-            str1.concate("\" ");
+            str1 = str1.concat(reservationCode);
+            str1 = str1.concat("%\" ");
             whereStatements.add(str1);
          }
 
          if (whereStatements.size() == 0) {
             query = "SELECT * " + 
-                     "FROM lab6_reservations;";
+                     "FROM lab6_reservations ;";
          }
          else {
             for (int i=0; i<whereStatements.size(); i++) {
                if (i != 0) {
-                  query.concate("AND ");
+                  query.concat("AND ");
                }
-               query.concate(whereCommand.get(i))
+               query = query.concat(whereStatements.get(i));
             }
 
-            query.concate(';');
+            query = query.concat(";");
          }
+         ResultSet rs = s.executeQuery(query);
+         
+         System.out.println("|CODE" + "\t|" + "Room" + "\t|" + "CheckIn" + "\t|" + "Checkout" + "\t|" + 
+            "Rate" + "\t|" + "LastName" + "\t|" + "FirstName" + "\t|" + "Adults" + "\t|" + "Kids");
+         while(rs.next()){
+            resCode = rs.getInt("CODE");
+            roomCode = rs.getString("Room");
+            startDate = rs.getString("CheckIn");
+            endDate = rs.getString("Checkout");
+            rate = rs.getDouble("Rate");
+            lastName = rs.getString("LastName");
+            firstName = rs.getString("FirstName");
+            adults = rs.getInt("Adults");
+            kids = rs.getInt("Kids");
 
+            System.out.println("|" + resCode + "\t|" + roomCode + "\t|" + startDate + "\t|" + endDate + "\t|" + 
+               rate + "\t|" + lastName + "\t\t|" + firstName + "\t\t|" + adults + "\t|" + kids);
+         }
          // TODO have the string now just need to execute it, pls follow up
       }
       catch(Exception e){
          System.out.println(e);
       }
-      System.out.println(firstName + lastName + startDate + endDate + roomCode + reservationCode );
+
+      //System.out.println(query);
 
 
    }
-
 
    private static void revenueCommand(){
       String title = "Room\t|Jan\t|Feb\t|Mar\t|Apr\t|May\t|June\t|July\t|Aug\t|Sep\t|Oct\t|Nov\t|Dec";
