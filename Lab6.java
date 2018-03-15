@@ -298,17 +298,11 @@ public class Lab6{
 
    private static void processReservation(String firstName, String lastName, String roomCode, String bedType,
       String startDate, String endDate, int childCount, int adultCount){
-      //produce list of available rooms
-      //book by number options
-      //if no matches, suggest 5 possible rooms/dates
-      //do not overlap with another existing reservation
-      //if adults + children exceeds capacity of room, throw error
-      //to reserve multiple rooms, make several reservations
-      //provide option to cancel current reservation request
-      //after choosing a room to reserve, provide user with a confirmation screen
 
       /* TODO start */
       /* trying in java process ver */
+      ArrayList<Room> roomInfo = new ArrayList<Room>();
+      ArrayList<String> whereStatements = new ArrayList<String>();
       String firstName = "";
       String lastName = "";
       String startDate = "";
@@ -317,20 +311,19 @@ public class Lab6{
       String bedType = "";
       String adultCount = "";
       String childCount = "";
+      String query = "";
+
 
       try{
          System.out.print("First Name: ");
          firstName = br.readLine();
-
          System.out.print("Last Name: ");
          lastName = br.readLine();
-
          System.out.println("Reservations between");
          System.out.print("Start Date [YYYY-MM-DD]: ");
          startDate = br.readLine();
          System.out.print("End Date [YYYY-MM-DD]: ");
          endDate = br.readLine();
-
          System.out.println("| Room Code | Room Name                |")
          System.out.println("| AOB       | Abscond or bolster       |");
          System.out.println("| CAS       | Convoke and sanguine     |");
@@ -345,45 +338,59 @@ public class Lab6{
          System.out.println("| Any       | No preference            |");
          System.out.print("Desired Room Code: ");
          roomCode = br.readLine();
-
          System.out.print("Bed Type [Double, Queen, King, Any]: ");
          bedType = br.readLine();
-
          System.out.print("Number of Adults: ");
          adultCount = br.readLine(); 
-
          System.out.print("Number of Children: ");
-         childCount = br.readLine(); 
+         childCount = br.readLine();
 
-         String query = "SELECT * " +
-                        "FROM lab6_reservations " +
-                        "INNER JOIN lab6_rooms ON Room = RoomCode " +
-                        "WHERE ((CheckIn BETWEEN \"" + startDate + "\" AND \"" + endDate + "\") " +
-                        "OR (Checkout BETWEEN \"" + startDate + "\" AND \"" + endDate + "\")) " +
-                        "AND CODE = \"" + roomCode + "\" ";
-
-         if (roomCode.toLowerCase().equals("any") == true)
-         {
-            query.concat()
-         }  // in progress
+         query = "SELECT * " +
+                  "FROM lab6_rooms ;";
 
          s = conn.createStatement();
          ResultSet rs = s.executeQuery(query);
 
-         while(rs.next()){
-            resCode = rs.getInt("CODE");
-            roomCode = rs.getString("Room");
-            startDate = rs.getString("CheckIn");
-            endDate = rs.getString("Checkout");
-            rate = rs.getDouble("Rate");
-            lastName = rs.getString("LastName");
-            firstName = rs.getString("FirstName");
-            adults = rs.getInt("Adults");
-            kids = rs.getInt("Kids");
+         // this creates the list of rooms for referencing
+         while (rs.next())
+         {
+            Room room = new Room(rs.getString("RoomCode"), 
+                                 rs.getString("RoomName"), 
+                                 rs.getInt("Beds"), 
+                                 rs.getString("bedType"), 
+                                 rs.getInt("maxOcc"), 
+                                 rs.getBigDecimal("basePrice"), 
+                                 rs.getString("decor"));
 
-            System.out.println("|" + resCode + "\t|" + roomCode + "\t|" + startDate + "\t|" + endDate + "\t|" + 
-               rate + "\t|" + lastName + "\t\t|" + firstName + "\t\t|" + adults + "\t|" + kids);
+            roomInfo.add(room);  // Room class created at the bottom
          }
+
+         // level 1 filter, date
+         query = "SELECT * " +
+                  "FROM lab6_reservations " +
+                  "WHERE ((CheckIn BETWEEN \"" + startDate + "\" AND \"" + endDate + "\") " + 
+                  "OR (Checkout BETWEEN \"" + startDate + "\" AND \"" + endDate + "\")) ;";
+
+         // TODO loop through result -> if there is a result -> mark that specific room as unavialable -> add other rooms to potential list
+         query = query.substring(0, query.length()-1);   // remove ";" to add on to query
+
+         // level 2 filter, date and room
+         if (roomCode.toLowerCase().equals("any") == false)
+         {
+            query = query + "AND RoomCode = \"" + roomCode + "\" ;";
+            // TODO loop through result -> if there is a result -> mark that specific room as unavialable -> add other rooms to potential list
+            query = query.substring(0, query.length()-1);   // remove ";" to add on to query
+         }
+
+         if (bedType.toLowerCase().equals("any") == false)
+         {
+            query = query + "AND bedType = \"" + bedType + "\" ;";
+            // TODO loop through result -> if there is a result -> mark that specific room as unavialable -> add other rooms to potential list
+         }
+
+         rs = s.executeQuery(query);
+
+         while (rs.next())
       }
       catch(Exception e){
          System.out.println(e);
@@ -652,6 +659,28 @@ public class Lab6{
          System.out.println("\nCould not open connection");
          System.out.println("Exiting...\n");
          System.exit(-1);
+      }
+   }
+
+   private static class Room
+   {
+      public String roomCode;
+      public String roomName;
+      public int beds;
+      public String bedType;
+      public int maxOcc;
+      public float basePrice;
+      public String decor;
+
+      public Room(String roomCode, String roomName, int beds, String bedType, int maxOcc, float basePrice, String decor)
+      {
+         this.roomCode 
+         this.roomName 
+         this.beds 
+         this.bedType 
+         this.maxOcc 
+         this.basePrice 
+         this.decor 
       }
    }
 }
