@@ -307,6 +307,89 @@ public class Lab6{
       //provide option to cancel current reservation request
       //after choosing a room to reserve, provide user with a confirmation screen
 
+      /* TODO start */
+      /* trying in java process ver */
+      String firstName = "";
+      String lastName = "";
+      String startDate = "";
+      String endDate = "";
+      String roomCode = "";
+      String bedType = "";
+      String adultCount = "";
+      String childCount = "";
+
+      try{
+         System.out.print("First Name: ");
+         firstName = br.readLine();
+
+         System.out.print("Last Name: ");
+         lastName = br.readLine();
+
+         System.out.println("Reservations between");
+         System.out.print("Start Date [YYYY-MM-DD]: ");
+         startDate = br.readLine();
+         System.out.print("End Date [YYYY-MM-DD]: ");
+         endDate = br.readLine();
+
+         System.out.println("| Room Code | Room Name                |")
+         System.out.println("| AOB       | Abscond or bolster       |");
+         System.out.println("| CAS       | Convoke and sanguine     |");
+         System.out.println("| FNA       | Frugal not apropos       |");
+         System.out.println("| HBB       | Harbinger but bequest    |");
+         System.out.println("| IBD       | Immutable before decorum |");
+         System.out.println("| IBS       | Interim but salutary     |");
+         System.out.println("| MWC       | Mendicant with cryptic   |");
+         System.out.println("| RND       | Recluse and defiance     |");
+         System.out.println("| RTE       | Riddle to exculpate      |");
+         System.out.println("| TAA       | Thrift and accolade      |");
+         System.out.println("| Any       | No preference            |");
+         System.out.print("Desired Room Code: ");
+         roomCode = br.readLine();
+
+         System.out.print("Bed Type [Double, Queen, King, Any]: ");
+         bedType = br.readLine();
+
+         System.out.print("Number of Adults: ");
+         adultCount = br.readLine(); 
+
+         System.out.print("Number of Children: ");
+         childCount = br.readLine(); 
+
+         String query = "SELECT * " +
+                        "FROM lab6_reservations " +
+                        "INNER JOIN lab6_rooms ON Room = RoomCode " +
+                        "WHERE ((CheckIn BETWEEN \"" + startDate + "\" AND \"" + endDate + "\") " +
+                        "OR (Checkout BETWEEN \"" + startDate + "\" AND \"" + endDate + "\")) " +
+                        "AND CODE = \"" + roomCode + "\" ";
+
+         if (roomCode.toLowerCase().equals("any") == true)
+         {
+            query.concat()
+         }  // in progress
+
+         s = conn.createStatement();
+         ResultSet rs = s.executeQuery(query);
+
+         while(rs.next()){
+            resCode = rs.getInt("CODE");
+            roomCode = rs.getString("Room");
+            startDate = rs.getString("CheckIn");
+            endDate = rs.getString("Checkout");
+            rate = rs.getDouble("Rate");
+            lastName = rs.getString("LastName");
+            firstName = rs.getString("FirstName");
+            adults = rs.getInt("Adults");
+            kids = rs.getInt("Kids");
+
+            System.out.println("|" + resCode + "\t|" + roomCode + "\t|" + startDate + "\t|" + endDate + "\t|" + 
+               rate + "\t|" + lastName + "\t\t|" + firstName + "\t\t|" + adults + "\t|" + kids);
+         }
+      }
+      catch(Exception e){
+         System.out.println(e);
+      }
+      /* TODO end */
+
       System.out.println("Select a reservation");
       System.out.print("[1]");
       System.out.print("[2]");
@@ -386,16 +469,12 @@ public class Lab6{
          if (startDate.toLowerCase().equals("any") == false){
             str1 = "CheckIn >= \"";
             str1 = str1.concat(startDate);
-            //str1 = str1.concat("\" AND \"");
-            //str1 = str1.concat(endDate);
             str1 = str1.concat("\" ");
             whereStatements.add(str1);
          }
 
          if(endDate.toLowerCase().equals("any") == false){
             str1 = "Checkout <= \"";
-            //str1 = str1.concat(startDate);
-            //str1 = str1.concat("\" AND \"");
             str1 = str1.concat(endDate);
             str1 = str1.concat("\" ");
             whereStatements.add(str1);
@@ -447,15 +526,10 @@ public class Lab6{
             System.out.println("|" + resCode + "\t|" + roomCode + "\t|" + startDate + "\t|" + endDate + "\t|" + 
                rate + "\t|" + lastName + "\t\t|" + firstName + "\t\t|" + adults + "\t|" + kids);
          }
-         // TODO have the string now just need to execute it, pls follow up
       }
       catch(Exception e){
          System.out.println(e);
       }
-
-      //System.out.println(query);
-
-
    }
 
    private static void revenueCommand(){
