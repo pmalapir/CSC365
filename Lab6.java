@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 
 import java.util.*;
 import java.lang.*;
+import java.math.*;
 import java.io.*;
 import java.util.Map;
 import java.util.Scanner;
@@ -134,7 +135,7 @@ public class Lab6{
                revenueCommand();
                //System.out.println("4...");
             }
-            else if(tokens[0].equals("M")){
+            else if(tokens[0].equals("M")||tokens[0].equals("m")){
                printOptions();
             }
             else if(tokens[0].equals("0")){ 
@@ -276,17 +277,17 @@ public class Lab6{
          startDate = br.readLine();
          System.out.print("End Date [YYYY-MM-DD]: ");
          endDate = br.readLine();
-         System.out.println("| Room Code | Room Name                | ");
+         System.out.println("| Room Code | Room Name                | Bed Type");
          System.out.println("| AOB       | Abscond or bolster       | Queen");
          System.out.println("| CAS       | Convoke and sanguine     | King");
-         System.out.println("| FNA       | Frugal not apropos       | ");
+         System.out.println("| FNA       | Frugal not apropos       | King");
          System.out.println("| HBB       | Harbinger but bequest    | Queen");
-         System.out.println("| IBD       | Immutable before decorum | ");
-         System.out.println("| IBS       | Interim but salutary     | ");
+         System.out.println("| IBD       | Immutable before decorum | Queen");
+         System.out.println("| IBS       | Interim but salutary     | King");
          System.out.println("| MWC       | Mendicant with cryptic   | Double");
-         System.out.println("| RND       | Recluse and defiance     | ");
-         System.out.println("| RTE       | Riddle to exculpate      | ");
-         System.out.println("| TAA       | Thrift and accolade      | ");
+         System.out.println("| RND       | Recluse and defiance     | King");
+         System.out.println("| RTE       | Riddle to exculpate      | Queen");
+         System.out.println("| TAA       | Thrift and accolade      | Double");
          System.out.println("| Any       | No preference            | ");
          System.out.print("Desired Room Code: ");
          roomCode = br.readLine();
@@ -323,6 +324,8 @@ public class Lab6{
       Statement s = null;
       int i;
       int j;
+      String reservationChoice;
+      int choice;
       try{
          // this creates the list of rooms for referencing
          while (numRes < 5) {
@@ -409,21 +412,35 @@ public class Lab6{
             String startDateTemp = startDate.substring(8, startDate.length());
             int startDay = Integer.parseInt(startDateTemp);
             startDay++;
-            startDate = startDate.substring(0, 8) + Integer.toString(startDay);
-            //System.out.println(startDate);
+            if(startDay < 10){
+               startDate = startDate.substring(0, 8);
+               startDate = startDate.concat("0");
+               startDate = startDate + Integer.toString(startDay);   
+            }
+            else{
+               startDate = startDate.substring(0, 8) + Integer.toString(startDay);
+            }
 
             String endDateTemp = endDate.substring(8, endDate.length());
             int endDay = Integer.parseInt(endDateTemp);
             endDay++;
-            endDate = endDate.substring(0, 8) + Integer.toString(endDay);
+            if(endDay < 10){
+               endDate = endDate.substring(0, 8);
+               endDate = endDate.concat("0");
+               endDate = endDate + Integer.toString(endDay);   
+            }
+            else{
+               endDate = endDate.substring(0, 8) + Integer.toString(endDay);
+            }
          }
       }
       catch(Exception e){
          System.out.println(e);
       }
 
-      System.out.println("Select a reservation");
-      System.out.println("\t|Roomcode\t|Bed Count\t|Bed Type\t|Max Occ\t|Base Price\t|Start Date\t|End date");
+
+      System.out.format("\t|%-10s|%-10s|%-8s|%-8s|%-10s|%-15s|%-15s\n","Roomcode", "Bed Count", 
+         "Bed Type", "Max Occ", "Base Price", "Start Date", "End date");
       System.out.print("[1]\t");
       roomResults.get(0).printRoom();
       System.out.println();
@@ -440,8 +457,43 @@ public class Lab6{
       roomResults.get(4).printRoom();
       System.out.println();
       System.out.println("[0] Return to Main Menu");
+      System.out.print("Select a reservation: ");
+      
+      try{
+         reservationChoice = br.readLine();
+         choice = Integer.parseInt(reservationChoice);
+         makeReservation(firstName, lastName, adultCount, childCount, roomResults.get(choice-1));
+      }
+      catch(Exception e){
+         System.out.println(e);
+      }  
+   }
 
-      /* TODO end */
+  /*rivate String incrementDate(String date){
+      String yearTemp = date.substring(0,3);
+      String monthTemp = date.substring(5,6);
+      String dayTemp = date.substring(8, date.length());
+
+      int yearTemp = Integer.parseInt(yearTemp);
+      int month = Integer.parseInt(monthTemp);
+      int day = Integer.parseInt(dayTemp);
+      
+      startDay++;
+      if(startDay < 10){
+         startDate = startDate.substring(0, 8);
+         startDate = startDate.concat("0");
+         startDate = startDate + Integer.toString(startDay);   
+      }
+      if(startDay > 31)            
+      else{
+         startDate = startDate.substring(0, 8) + Integer.toString(startDay);
+      }
+
+   }*/
+
+   private static void makeReservation(String firstName, String lastName, String adultCount, 
+      String childCount, Room room){
+            /* TODO end */
 
       /*System.out.println("Select a reservation");
       System.out.print("[0]Return to Main Menu");*/
@@ -459,9 +511,74 @@ public class Lab6{
 
       //display confirm or cancel
       //add to reservation table
+      double weekday = 0;
+      double weekend = 0;
+      double price = 0;
+      String choice = "";
+      String insert = "";
+      Statement s = null;
+      ResultSet rs = null;
+      String query = "";
+      int max = 0;
+      int roomOcc;
+
+      if(weekday != 0){
+         price += room.basePrice * weekday;
+      }
+      if(weekend != 0){
+         price += room.basePrice * weekend * 1.1;
+      }
+
+      price = price * 1.18;
+
+
+      //roomOcc = String.toInteger(room.maxOcc);
+      //if((childCount + adultCount) > roomOcc){
+      //   System.out.println("**Notice: Your group exceeds the maximum occupancy for this room **\n");
+      //}
+
+      System.out.println("\nReview reservation before submitting");
+      System.out.println("Name: " + firstName + " " + lastName);
+      System.out.println("Room details:");
+      System.out.println("\tRoom Code: " + room.roomCode);
+      System.out.println("\tRoom Name: " + room.roomName);
+      System.out.println("\tBed Type: " + room.bedType);
+      System.out.println("From: " + room.startDate + " To: " + room.endDate);
+      System.out.println("Adult Count: " + adultCount);
+      System.out.println("Child Count: " + childCount);
+      System.out.println("Price: $" + price); 
+
+      System.out.println("\n[0] No");
+      System.out.println("[1] Yes");
+      System.out.print("Would you like to book the reservation?: ");
+      try{
+         choice = br.readLine();
+
+         if(choice.equals("1")){
+            s = conn.createStatement();
+            query = "select MAX(CODE) from lab6_reservations;";
+            rs = s.executeQuery(query);
+            if (rs.next()){
+               max = rs.getInt("MAX(CODE)");
+            }
+            max++;
+
+            insert = "INSERT into lab6_reservations " +
+                     "VALUES (" + max + ", \"" + room.roomCode + "\", " + "\"" + room.startDate + "\", " + 
+                     "\"" + room.endDate + "\", " + price +  ", \"" + lastName.toUpperCase() + "\", " + 
+                     "\"" + firstName.toUpperCase() + "\", " + adultCount + ", " + childCount + ");";
+            s.executeUpdate(insert);
+            System.out.println("Reservation created!");
+         }
+      }
+      catch(Exception e){
+         System.out.println(e);
+      }
    }
 
- private static void searchCommand(){
+
+
+   private static void searchCommand(){
       ArrayList<String> whereStatements = new ArrayList<String>();
 
       String firstName="";
@@ -550,7 +667,7 @@ public class Lab6{
          }
          
          else{
-            System.out.println(whereStatements.size());
+            //System.out.println(whereStatements.size());
             for (int i=0; i<whereStatements.size() - 1; i++){
                if (i != 0) {
                   query = query + "AND ";
@@ -558,11 +675,10 @@ public class Lab6{
                query = query.concat(whereStatements.get(i));            
             }
          }
-         System.out.println(query);
+         //System.out.println(query);
          ResultSet rs = s.executeQuery(query);
-
-         System.out.println("|CODE" + "\t|" + "Room" + "\t|" + "CheckIn" + "\t|" + "Checkout" + "\t|" + 
-            "Rate" + "\t|" + "LastName" + "\t|" + "FirstName" + "\t|" + "Adults" + "\t|" + "Kids");
+         System.out.format("|%-7s|%-5s|%-10s|%-10s|%-8s|%-14s|%-14s|%-6s|%-3s\n", "CODE", "Room", "Checkin", "Checkout", 
+            "Rate", "LastName", "FirstName", "Adults", "Kids");
          while(rs.next()){
             resCode = rs.getInt("CODE");
             roomCode = rs.getString("Room");
@@ -574,8 +690,8 @@ public class Lab6{
             adults = rs.getInt("Adults");
             kids = rs.getInt("Kids");
 
-            System.out.println("|" + resCode + "\t|" + roomCode + "\t|" + startDate + "\t|" + endDate + "\t|" + 
-               rate + "\t|" + lastName + "\t\t|" + firstName + "\t\t|" + adults + "\t|" + kids);
+            System.out.format("|%-7d|%-5s|%-10s|%-10s|%8.2f|%-14s|%-14s|%-6d|%-3d\n", resCode, roomCode, 
+               startDate, endDate, rate, lastName, firstName, adults, kids);
          }
       }
       catch(Exception e){
@@ -747,8 +863,8 @@ public class Lab6{
       }
 
       public void printRoom(){
-         System.out.print(this.roomCode + "\t|" + this.beds + "\t|" +  this.bedType + "\t|" + this.maxOcc + "\t|" + this.basePrice 
-            + "\t|" + this.startDate + "\t|" + this.endDate);
+         System.out.format("|%-10s|%-10d|%-8s|%-8d|%10.2f|%-15s|%-15s", this.roomCode, this.beds, this.bedType,
+            this.maxOcc, this.basePrice, this.startDate, this.endDate);
       }
    }
 }
