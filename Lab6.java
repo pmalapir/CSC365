@@ -18,6 +18,15 @@ import java.time.LocalDate;
 
 //CLASSPATH=$CLASSPATH:mysql-connector-java-5.1.44-bin.jar
 
+/*TODO
+Price
+ROlling date
+maxocc notice
+
+readme
+-reservation design decisions
+-set classpath in shell using CLASSPATH=$CLASSPATH:mysql-connector-java-5.1.44-bin.jar before running
+*/
 public class Lab6{
    private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
    private static Connection conn = null;
@@ -793,12 +802,17 @@ public class Lab6{
    }
 
    private static void login(){
+
+
       String jdbc_url="jdbc:mysql://csc365winter2018.webredirect.org/pmalapir?";
-      //jdbc:mysql://csc365winter2018.webredirect.org/pmalapir?
       String usr="pmalapir";
       String pw="365W18_010118988";
 
-      /*try{
+      //uncomment to run on input  
+      /*String jdbc_url = "";
+      String usr="";
+      String pw = "";
+      try{
          br = new BufferedReader(new InputStreamReader(System.in));
          System.out.print("Url: ");
          jdbc_url = br.readLine();
