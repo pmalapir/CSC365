@@ -16,17 +16,12 @@ import java.util.Scanner;
 import java.util.LinkedHashMap;
 import java.time.LocalDate;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+
 //CLASSPATH=$CLASSPATH:mysql-connector-java-5.1.44-bin.jar
 
-/*TODO
-Price
-ROlling date
-maxocc notice
-
-readme
--reservation design decisions
--set classpath in shell using CLASSPATH=$CLASSPATH:mysql-connector-java-5.1.44-bin.jar before running
-*/
 public class Lab6{
    private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
    private static Connection conn = null;
@@ -182,11 +177,6 @@ public class Lab6{
    }
 
    private static void roomCommand(){
-      //print list of rooms sorted by popularity
-      //Room popularity: number of days the room has been occupied during the previous 180 days/180 round to 2 decimals
-      //Next available check-in date
-      //Length of the most recent stay in the room
-      //Most recent check out date
       String roomCode = "";
       String roomName = "";
       int beds = 0;
@@ -310,7 +300,6 @@ public class Lab6{
       catch(Exception e){
          System.out.println(e);
       }
-      //System.out.println(firstName + lastName + roomCode + bedType + startDate + endDate + childCount + adultCount);
       try{
          processReservation(firstName, lastName, roomCode, bedType, startDate, endDate,
           childCount, adultCount);
@@ -323,8 +312,6 @@ public class Lab6{
    private static void processReservation(String firstName, String lastName, String roomCode, String bedType,
       String startDate, String endDate, String childCount, String adultCount){
 
-      /* TODO start */
-      /* trying in java process ver */
       ArrayList<Room> roomResults = new ArrayList<Room>();
       int numRes = 0;
       Room temp = new Room();
@@ -361,7 +348,6 @@ public class Lab6{
                roomInfo.add(room);  // Room class created at the bottom
             }  
 
-         // level 1 filter, date
             query = "SELECT RoomCode, RoomName, Beds, bedType, maxOcc, basePrice, decor " +
                      "FROM lab6_reservations join lab6_rooms on RoomCode = room " +
                      "WHERE ((CheckIn BETWEEN \"" + startDate + "\" AND \"" + endDate + "\") " + 
@@ -418,29 +404,37 @@ public class Lab6{
                numRes++;
             }
 
-            String startDateTemp = startDate.substring(8, startDate.length());
-            int startDay = Integer.parseInt(startDateTemp);
-            startDay++;
-            if(startDay < 10){
-               startDate = startDate.substring(0, 8);
-               startDate = startDate.concat("0");
-               startDate = startDate + Integer.toString(startDay);   
-            }
-            else{
-               startDate = startDate.substring(0, 8) + Integer.toString(startDay);
-            }
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate date1 = LocalDate.parse(startDate, formatter);
+            LocalDate date2 = LocalDate.parse(endDate, formatter);
+            date1 = date1.plus(1, ChronoUnit.DAYS);
+            date2 = date2.plus(1, ChronoUnit.DAYS);
+            startDate = date1.format(formatter);
+            endDate = date2.format(formatter);
 
-            String endDateTemp = endDate.substring(8, endDate.length());
-            int endDay = Integer.parseInt(endDateTemp);
-            endDay++;
-            if(endDay < 10){
-               endDate = endDate.substring(0, 8);
-               endDate = endDate.concat("0");
-               endDate = endDate + Integer.toString(endDay);   
-            }
-            else{
-               endDate = endDate.substring(0, 8) + Integer.toString(endDay);
-            }
+            // String startDateTemp = startDate.substring(8, startDate.length());
+            // int startDay = Integer.parseInt(startDateTemp);
+            // startDay++;
+            // if(startDay < 10){
+            //    startDate = startDate.substring(0, 8);
+            //    startDate = startDate.concat("0");
+            //    startDate = startDate + Integer.toString(startDay);   
+            // }
+            // else{
+            //    startDate = startDate.substring(0, 8) + Integer.toString(startDay);
+            // }
+
+            // String endDateTemp = endDate.substring(8, endDate.length());
+            // int endDay = Integer.parseInt(endDateTemp);
+            // endDay++;
+            // if(endDay < 10){
+            //    endDate = endDate.substring(0, 8);
+            //    endDate = endDate.concat("0");
+            //    endDate = endDate + Integer.toString(endDay);   
+            // }
+            // else{
+            //    endDate = endDate.substring(0, 8) + Integer.toString(endDay);
+            // }
          }
       }
       catch(Exception e){
@@ -478,48 +472,9 @@ public class Lab6{
       }  
    }
 
-  /*rivate String incrementDate(String date){
-      String yearTemp = date.substring(0,3);
-      String monthTemp = date.substring(5,6);
-      String dayTemp = date.substring(8, date.length());
-
-      int yearTemp = Integer.parseInt(yearTemp);
-      int month = Integer.parseInt(monthTemp);
-      int day = Integer.parseInt(dayTemp);
-      
-      startDay++;
-      if(startDay < 10){
-         startDate = startDate.substring(0, 8);
-         startDate = startDate.concat("0");
-         startDate = startDate + Integer.toString(startDay);   
-      }
-      if(startDay > 31)            
-      else{
-         startDate = startDate.substring(0, 8) + Integer.toString(startDay);
-      }
-
-   }*/
-
    private static void makeReservation(String firstName, String lastName, String adultCount, 
       String childCount, Room room){
-            /* TODO end */
 
-      /*System.out.println("Select a reservation");
-      System.out.print("[0]Return to Main Menu");*/
-
-      //display for confirmation
-      //first, last name
-      //room code, room name, bed tyope
-      //start, end date
-      //# of adults
-      //# of children
-      //cost of stay, rate as follows
-      //    -number of weekday * room base rate +
-      //    -number of weekend * 110% room base rate +
-      //    -18% tourism tax on subtotal
-
-      //display confirm or cancel
-      //add to reservation table
       double weekday = 0;
       double weekend = 0;
       double price = 0;
@@ -531,20 +486,17 @@ public class Lab6{
       int max = 0;
       int roomOcc;
 
-      if(weekday != 0){
-         price += room.basePrice * weekday;
-      }
-      if(weekend != 0){
-         price += room.basePrice * weekend * 1.1;
-      }
+      double weekendRate = room.basePrice * 1.1;
+      price = calcPrice(room.startDate, room.endDate, room.basePrice, weekendRate);
 
       price = price * 1.18;
 
+      int aCount = Integer.parseInt(adultCount);
+      int cCount = Integer.parseInt(childCount);
 
-      //roomOcc = String.toInteger(room.maxOcc);
-      //if((childCount + adultCount) > roomOcc){
-      //   System.out.println("**Notice: Your group exceeds the maximum occupancy for this room **\n");
-      //}
+      if((cCount + aCount) > room.maxOcc){
+        System.out.println("**Notice: Your group exceeds the maximum occupancy for this room **");
+      }
 
       System.out.println("\nReview reservation before submitting");
       System.out.println("Name: " + firstName + " " + lastName);
@@ -585,7 +537,31 @@ public class Lab6{
       }
    }
 
+   private static double calcPrice(String startDate, String endDate, double weekdayRate, double weekendRate)
+   {
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      LocalDate date1 = LocalDate.parse(startDate, formatter);
+      LocalDate date2 = LocalDate.parse(endDate, formatter);
+      double price = 0;
 
+      while (date1.isEqual(date2.plus(1,ChronoUnit.DAYS)) == false)
+      {
+         int day = date1.getDayOfWeek().getValue();
+
+         if (day == 6 || day == 7)
+         {
+            price += weekendRate;
+         }
+         else
+         {
+            price += weekdayRate;
+         }
+
+         date1 = date1.plus(1, ChronoUnit.DAYS);
+      }
+
+      return price;
+   }
 
    private static void searchCommand(){
       ArrayList<String> whereStatements = new ArrayList<String>();
@@ -627,44 +603,31 @@ public class Lab6{
 
          if (firstName.toLowerCase().equals("any") == false) {
             str1 = "FirstName LIKE \"" + firstName + "%\" ";
-            // str1 = str1.concat(firstName);
-            // str1 = str1.concat("%\" ");
-            //System.out.println(str1);
             whereStatements.add(str1);
          }
 
          if (lastName.toLowerCase().equals("any") == false) {
             str1 = "LastName LIKE \"" + lastName + "%\" ";
-            // str1 = str1.concat(lastName);
-            // str1 = str1.concat("%\" ");
             whereStatements.add(str1);
          }
 
          if (startDate.toLowerCase().equals("any") == false){
             str1 = "CheckIn >= \"" + startDate + "\" ";
-            // str1 = str1.concat(startDate);
-            // str1 = str1.concat("\" ");
             whereStatements.add(str1);
          }
 
          if(endDate.toLowerCase().equals("any") == false){
             str1 = "Checkout <= \"" + endDate + "\" ";
-            // str1 = str1.concat(endDate);
-            // str1 = str1.concat("\" ");
             whereStatements.add(str1);
          }
 
          if (roomCode.toLowerCase().equals("any") == false) {
             str1 = "Room LIKE \"" + roomCode + "%\" ";
-            // str1 = str1.concat(roomCode);
-            // str1 = str1.concat("%\" ");
             whereStatements.add(str1);
          }
 
          if (reservationCode.toLowerCase().equals("any") == false) {
             str1 = "CODE LIKE \"" + reservationCode + "%\" ";
-            // str1 = str1.concat(reservationCode);
-            // str1 = str1.concat("%\" ");
             whereStatements.add(str1);
          }
 
@@ -676,7 +639,6 @@ public class Lab6{
          }
          
          else{
-            //System.out.println(whereStatements.size());
             for (int i=0; i<whereStatements.size() - 1; i++){
                if (i != 0) {
                   query = query + "AND ";
@@ -684,7 +646,6 @@ public class Lab6{
                query = query.concat(whereStatements.get(i));            
             }
          }
-         //System.out.println(query);
          ResultSet rs = s.executeQuery(query);
          System.out.format("|%-7s|%-5s|%-10s|%-10s|%-8s|%-14s|%-14s|%-6s|%-3s\n", "CODE", "Room", "Checkin", "Checkout", 
             "Rate", "LastName", "FirstName", "Adults", "Kids");
@@ -802,14 +763,12 @@ public class Lab6{
    }
 
    private static void login(){
-
-
-      String jdbc_url="jdbc:mysql://csc365winter2018.webredirect.org/pmalapir?";
-      String usr="pmalapir";
-      String pw="365W18_010118988";
+      // String jdbc_url="jdbc:mysql://csc365winter2018.webredirect.org/pmalapir?";
+      // String usr="pmalapir";
+      // String pw="365W18_010118988";
 
       //uncomment to run on input  
-      /*String jdbc_url = "";
+      String jdbc_url = "";
       String usr="";
       String pw = "";
       try{
@@ -823,7 +782,7 @@ public class Lab6{
       }
       catch(Exception e){
          System.out.println(e);
-      }*/
+      }
 
       try {
          conn = DriverManager.getConnection(jdbc_url, usr, pw);
