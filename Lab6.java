@@ -262,58 +262,10 @@ public class Lab6{
       String bedType="";
       String startDate="";
       String endDate ="";
-      int childCount = -1;
-      int adultCount = -1;
+      String childCount = "";
+      String adultCount = "";
 
       System.out.println("\nCreating reservation request...\n");
-      try{
-         System.out.print("First Name: ");
-         firstName = br.readLine();
-         System.out.print("Last Name: ");
-         lastName = br.readLine();
-         System.out.print("Room Code: ");
-         roomCode = br.readLine();
-         System.out.print("Bed Type: ");
-         bedType = br.readLine();
-         System.out.print("Start Day: ");
-         startDate = br.readLine();
-         System.out.print("End Day: ");
-         endDate = br.readLine();
-         System.out.print("Child Count: ");
-         childCount = Integer.parseInt(br.readLine());
-         System.out.print("Adult Count: ");
-         adultCount = Integer.parseInt(br.readLine());
-      }
-      catch(Exception e){
-         System.out.println(e);
-      }
-      System.out.println(firstName + lastName + roomCode + bedType + startDate + endDate + childCount + adultCount);
-      /*try{
-         processReservation(firstName, lastName, roomCode, bedType, startDate, endDate, childCount, adultCount);
-      }
-      catch(Exception e){
-         System.out.println(e);
-      }*/
-   }
-
-   private static void processReservation(String firstName, String lastName, String roomCode, String bedType,
-      String startDate, String endDate, int childCount, int adultCount){
-
-      /* TODO start */
-      /* trying in java process ver */
-      ArrayList<Room> roomInfo = new ArrayList<Room>();
-      ArrayList<String> whereStatements = new ArrayList<String>();
-      String firstName = "";
-      String lastName = "";
-      String startDate = "";
-      String endDate = "";
-      String roomCode = "";
-      String bedType = "";
-      String adultCount = "";
-      String childCount = "";
-      String query = "";
-
-
       try{
          System.out.print("First Name: ");
          firstName = br.readLine();
@@ -324,7 +276,7 @@ public class Lab6{
          startDate = br.readLine();
          System.out.print("End Date [YYYY-MM-DD]: ");
          endDate = br.readLine();
-         System.out.println("| Room Code | Room Name                |")
+         System.out.println("| Room Code | Room Name                |");
          System.out.println("| AOB       | Abscond or bolster       |");
          System.out.println("| CAS       | Convoke and sanguine     |");
          System.out.println("| FNA       | Frugal not apropos       |");
@@ -344,7 +296,34 @@ public class Lab6{
          adultCount = br.readLine(); 
          System.out.print("Number of Children: ");
          childCount = br.readLine();
+      }
+      catch(Exception e){
+         System.out.println(e);
+      }
+      //System.out.println(firstName + lastName + roomCode + bedType + startDate + endDate + childCount + adultCount);
+      try{
+         processReservation(firstName, lastName, roomCode, bedType, startDate, endDate,
+          childCount, adultCount);
+      }
+      catch(Exception e){
+         System.out.println(e);
+      }
+   }
 
+   private static void processReservation(String firstName, String lastName, String roomCode, String bedType,
+      String startDate, String endDate, String childCount, String adultCount){
+
+      /* TODO start */
+      /* trying in java process ver */
+      ArrayList<Room> roomInfo = new ArrayList<Room>();
+      ArrayList<Room> currResv = new ArrayList<Room>();
+      Room temp = null;
+      ArrayList<String> whereStatements = new ArrayList<String>();
+      String query = "";
+      Statement s = null;
+      int i;
+      int j;
+      try{
          query = "SELECT * " +
                   "FROM lab6_rooms ;";
 
@@ -352,58 +331,74 @@ public class Lab6{
          ResultSet rs = s.executeQuery(query);
 
          // this creates the list of rooms for referencing
-         while (rs.next())
-         {
+         while (rs.next()){
             Room room = new Room(rs.getString("RoomCode"), 
                                  rs.getString("RoomName"), 
                                  rs.getInt("Beds"), 
                                  rs.getString("bedType"), 
                                  rs.getInt("maxOcc"), 
-                                 rs.getBigDecimal("basePrice"), 
+                                 rs.getDouble("basePrice"), 
                                  rs.getString("decor"));
 
             roomInfo.add(room);  // Room class created at the bottom
          }
-
+         
          // level 1 filter, date
-         query = "SELECT * " +
-                  "FROM lab6_reservations " +
+         query = "SELECT RoomCode, RoomName, Beds, bedType, maxOcc, basePrice, decor " +
+                  "FROM lab6_reservations join lab6_rooms on RoomCode = room " +
                   "WHERE ((CheckIn BETWEEN \"" + startDate + "\" AND \"" + endDate + "\") " + 
                   "OR (Checkout BETWEEN \"" + startDate + "\" AND \"" + endDate + "\")) ;";
 
-         // TODO loop through result -> if there is a result -> mark that specific room as unavialable -> add other rooms to potential list
-         query = query.substring(0, query.length()-1);   // remove ";" to add on to query
+         // TODO loop through result -> if there is a result -> mark that specific room as unavailable -> add other rooms to potential list
+         //query = query.substring(0, query.length()-1);   // remove ";" to add on to query
 
          // level 2 filter, date and room
-         if (roomCode.toLowerCase().equals("any") == false)
-         {
+         if (roomCode.toLowerCase().equals("any") == false){
             query = query + "AND RoomCode = \"" + roomCode + "\" ;";
             // TODO loop through result -> if there is a result -> mark that specific room as unavialable -> add other rooms to potential list
-            query = query.substring(0, query.length()-1);   // remove ";" to add on to query
+            //query = query.substring(0, query.length()-1);   // remxove ";" to add on to query
          }
 
-         if (bedType.toLowerCase().equals("any") == false)
-         {
-            query = query + "AND bedType = \"" + bedType + "\" ;";
+         //if (bedType.toLowerCase().equals("any") == false){
+         //   query = query + "AND bedType = \"" + bedType + "\" ;";
             // TODO loop through result -> if there is a result -> mark that specific room as unavialable -> add other rooms to potential list
-         }
-
+         //}
+         //System.out.println(query);
          rs = s.executeQuery(query);
 
-         while (rs.next())
+         while (rs.next()){
+            Room room = new Room(rs.getString("RoomCode"), 
+                                 rs.getString("RoomName"), 
+                                 rs.getInt("Beds"), 
+                                 rs.getString("bedType"), 
+                                 rs.getInt("maxOcc"), 
+                                 rs.getDouble("basePrice"), 
+                                 rs.getString("decor"));
+
+            currResv.add(room);  // Room class created at the bottom
+         }
+         for(i = 0; i<currResv.size(); i++){
+            for(j = 0; j<roomInfo.size(); j++){
+               if(currResv.get(i).roomCode.equals(roomInfo.get(j).roomCode)){
+                  roomInfo.remove(j);
+               } 
+            }
+         }
+         for (i = 0;i < roomInfo.size(); i++){
+            if(roomInfo.get(i).roomCode == roomCode)
+               temp = roomInfo.get(i);
+               roomInfo.get(i) = roomInfo.get(i);
+               roomInfo.get(i) = temp;
+         }
+
       }
       catch(Exception e){
          System.out.println(e);
       }
       /* TODO end */
 
-      System.out.println("Select a reservation");
-      System.out.print("[1]");
-      System.out.print("[2]");
-      System.out.print("[3]");
-      System.out.print("[4]");
-      System.out.print("[5]");
-      System.out.print("[0]Return to Main Menu");
+      /*System.out.println("Select a reservation");
+      System.out.print("[0]Return to Main Menu");*/
 
       //display for confirmation
       //first, last name
@@ -503,20 +498,21 @@ public class Lab6{
 
          whereStatements.add(";");
 
-         // if (whereStatements.size() == 0) {
-         //    query = "SELECT * " + 
-         //             "FROM lab6_reservations ;";
-         // }
-         else {
-            for (int i=0; i<whereStatements.size(); i++) {
-               if (i != 0) {
-                  query.concat("AND ");
-               }
-               query = query.concat(whereStatements.get(i));
-            }
-
-            query = query.concat(";");
+         if (whereStatements.size() == 1) {
+             query = "SELECT * " + 
+                      "FROM lab6_reservations ;";
          }
+         
+         else{
+            System.out.println(whereStatements.size());
+            for (int i=0; i<whereStatements.size() - 1; i++){
+               if (i != 0) {
+                  query = query + "AND ";
+               }
+               query = query.concat(whereStatements.get(i));            
+            }
+         }
+         System.out.println(query);
          ResultSet rs = s.executeQuery(query);
 
          System.out.println("|CODE" + "\t|" + "Room" + "\t|" + "CheckIn" + "\t|" + "Checkout" + "\t|" + 
@@ -671,18 +667,23 @@ public class Lab6{
       public int beds;
       public String bedType;
       public int maxOcc;
-      public float basePrice;
+      public double basePrice;
       public String decor;
 
-      public Room(String roomCode, String roomName, int beds, String bedType, int maxOcc, float basePrice, String decor)
+      public Room(String roomCode, String roomName, int beds, String bedType, int maxOcc, double basePrice, String decor)
       {
-         this.roomCode 
-         this.roomName 
-         this.beds 
-         this.bedType 
-         this.maxOcc 
-         this.basePrice 
-         this.decor 
+         this.roomCode = roomCode;
+         this.roomName = roomName;
+         this.beds = beds;
+         this.bedType = bedType;
+         this.maxOcc = maxOcc;
+         this.basePrice = basePrice;
+         this.decor = decor;
+      }
+
+      public void printRoom(){
+         System.out.println(this.roomCode + "\t|" + this.roomName + "\t|" + this.beds + "\t|" +  
+            this.bedType + "\t|" + this.maxOcc + "\t|" + this.basePrice + "\t|" + this.decor);
       }
    }
 }
